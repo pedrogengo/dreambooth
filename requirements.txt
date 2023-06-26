@@ -5,3 +5,5 @@ ftfy
 tensorboard
 Jinja2
 neptune
+diffusers
+bitsandbytes

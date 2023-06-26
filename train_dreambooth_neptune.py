@@ -58,9 +58,6 @@ from diffusers.utils.import_utils import is_xformers_available
 if is_wandb_available():
     import wandb
 
-# Will error if the minimal version of diffusers is not installed. Remove at your own risks.
-check_min_version("0.18.0.dev0")
-
 logger = get_logger(__name__)
 
 
@@ -163,7 +160,7 @@ def log_validation(
             image = pipeline(**pipeline_args, num_inference_steps=25, generator=generator).images[0]
         images.append(image)
 
-    [run["validation/images"].append(pil_image, description=f"Prompt: {args.validation_prompt}") for image in images]
+    [run["validation/images"].append(image, description=f"Prompt: {args.validation_prompt}") for image in images]
     pipeline.save_pretrained(args.output_dir)
     run["model_checkpoint/dreambooth"].upload_files(args.output_dir)
 
@@ -814,10 +811,15 @@ def main(args):
     if args.neptune_token:
         if args.neptune_project:
             import neptune
+            from neptune.utils import stringify_unsupported
+            global run 
             run = neptune.init_run(
                 project=args.neptune_project,
                 api_token=args.neptune_token)
-            run["parameters"] = args
+            neptune_args = dict()
+            for k, v in vars(args).items():
+                neptune_args[k] = stringify_unsupported(v)
+            run["parameters"] = neptune_args
         else:
             raise ValueError("You should specify a project name.")
 
