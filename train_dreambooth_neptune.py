@@ -717,7 +717,8 @@ def main(args):
                 api_token=args.neptune_token)
             neptune_args = dict()
             for k, v in vars(args).items():
-                neptune_args[k] = stringify_unsupported(v)
+                if k != "neptune_project" and k != "neptune_token":
+                    neptune_args[k] = stringify_unsupported(v)
             run["parameters"] = neptune_args
         else:
             raise ValueError("You should specify a project name.")
