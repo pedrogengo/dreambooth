@@ -99,7 +99,7 @@ DreamBooth for the text encoder was enabled: {train_text_encoder}.
 
 
 def log_validation(
-    text_encoder, tokenizer, unet, vae, args, accelerator, weight_dtype, epoch, prompt_embeds, negative_prompt_embeds
+    text_encoder, tokenizer, unet, vae, args, accelerator, weight_dtype, global_step, prompt_embeds, negative_prompt_embeds
 ):
     logger.info(
         f"Running validation... \n Generating {args.num_validation_images} images with prompt:"
@@ -636,7 +636,6 @@ def main(args):
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         mixed_precision=args.mixed_precision,
-        log_with=args.report_to,
         project_config=accelerator_project_config,
     )
 
@@ -1092,7 +1091,7 @@ def main(args):
                             args,
                             accelerator,
                             weight_dtype,
-                            epoch,
+                            global_step,
                             validation_prompt_encoder_hidden_states,
                             validation_prompt_negative_prompt_embeds,
                         )
