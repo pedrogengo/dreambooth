@@ -155,8 +155,21 @@ def log_validation(
         with torch.autocast("cuda"):
             image = pipeline(**pipeline_args, num_inference_steps=25, generator=generator).images[0]
             images.append(image)
-        run["validation/images"].append(image, step=global_step,
-                                        description=f"Step: {global_step} Prompt: {args.validation_prompt}")
+
+    widths, heights = zip(*(i.size for i in images))
+    total_width = sum(widths)
+    max_height = max(heights)
+
+    concat_img = Image.new('RGB', (total_width, max_height))
+
+    x_offset = 0
+    for im in images:
+        concat_img.paste(im, (x_offset, 0))
+        x_offset += im.size[0]
+
+    run["validation/images"].append(concat_img, step=global_step,
+                                    description=f"Step: {global_step} Prompt: {args.validation_prompt}")
+
     output_step_dir = os.path.join(args.output_dir, f"step-{global_step}")
     pipeline.save_pretrained(output_step_dir)
     run[f"train/checkpoint/step-{global_step}"].track_files(output_step_dir)
